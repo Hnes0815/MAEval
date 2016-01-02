@@ -18,7 +18,7 @@ public class Program {
 	// TODO: argumente einsetzen
 	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/openvpn/revisionsFull.csv";
 	private static String smellDir = "/home/hnes/Masterarbeit/Results/AnnotationBundle/openvpn/ABRes";
-	private static int smellThreshold = 0;
+	private static int smellThreshold = 1;
 	
 	/**
 	 * The main method.

@@ -12,13 +12,14 @@ import java.util.TreeMap;
 import data.ChangedFile;
 import input.CSVHelper;
 import input.FileFinder;
+import output.SmellCSV;
 
 public class Program {
 
 	// TODO: argumente einsetzen
 	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/openvpn/revisionsFull.csv";
 	private static String smellDir = "/home/hnes/Masterarbeit/Results/AnnotationBundle/openvpn/ABRes";
-	private static int smellThreshold = 1;
+	private static int smellThreshold = 0;
 	
 	/**
 	 * The main method.
@@ -62,8 +63,10 @@ public class Program {
   	    
   	    // Erstes File nehmen und daraus das erste Datum ableiten
   	    File startDateFile = filesFind.get(0);
+  	    String prevFilePath = startDateFile.getAbsolutePath();
   	    startDate = getDateFromFileName(startDateFile);
-		
+		HashSet<String> prevSmellyFileSet = csvReader.getSmellsFromFileAB(prevFilePath, smellThreshold);
+  	    
 		for(File f : filesFind){
 			String filePath = f.getAbsolutePath();
 			endDate = getDateFromFileName(f);				
@@ -72,27 +75,66 @@ public class Program {
 			
 			System.out.println(filePath);
 			for(String curFile : smellyFileSet){
-				int fileIdx = curFile.lastIndexOf("locations/") + "locations/".length();
-				int lastdotIdx = curFile.lastIndexOf(".");
-	    		String curFileStr = curFile.substring(fileIdx, lastdotIdx);
-				System.out.println(curFileStr);
+				System.out.println(curFile);
 			}
+			
+			if(startDate.equals(endDate)){
+				// Wenn Anfangs und Enddatum gleich (nur beim ersten mal der Fall)
+				// dann schreibe alle Smells in die CSV
+				SmellCSV.writeCurSmells(smellyFileSet, endDate);
+			}else{
+				// ansonsten müssen erst die geänderten Daten rausgerechnet werden
+				// lädt alle geänderten Dateien zwischen zwei Daten in ein Set
+				HashSet<String>	curChangedSet = getCurBugfixes(changedMap, startDate, endDate);
+				
+				// nimmt ursprüngliche Smell Liste und löscht alle geänderten Files raus
+				HashSet<String> notChangedSet = deleteDuplicates(prevSmellyFileSet, curChangedSet);
+				
+				// nimmt aktuelle Smell Liste und fügt sie zu den ursprünglichen (außer den gelöschten hinzu)
+				for(String s : smellyFileSet){
+					notChangedSet.add(s);			// Sets sind unique daher keine Abfrage nötig
+				}
+				
+				// zum schluss dieses Set in die CSV schreiben
+				SmellCSV.writeCurSmells(notChangedSet, endDate);
+			}
+			
+			// prevSmellyFileSet und startDate ändern
+			startDate = endDate;
+			prevSmellyFileSet = smellyFileSet;
 		}
   	    
 		/* Lädt alle gebugfixten Dateien zwischen zwei Daten in ein Set */
-		HashSet<String> curBugSet = getCurBugfixes(bugMap, prevDate, curDate);
+		//HashSet<String> curBugSet = getCurBugfixes(bugMap, prevDate, curDate);
 		
 		/* 
 		 * Lädt alle geänderten Dateien zwischen zwei Daten in ein Set ... 
 		 * funktioniert mit gleicher Funktion nur andere Map rein
 		 */
-		HashSet<String>	curChangedSet = getCurBugfixes(changedMap, prevDate, curDate);	
+		//HashSet<String>	curChangedSet = getCurBugfixes(changedMap, prevDate, curDate);	
 	      
 	      
 	    // kleines Debugging
-	    //for(String curStr : curBugSet){
+	    //for(String curStr : curChangedSet){
 	    //	System.out.println("File: " + curStr);
 	    //}
+	}
+	
+	/**
+	 * nimmt ursprüngliche Smell Liste und löscht alle geänderten Files raus
+	 * 
+	 * @param currentSet
+	 * @param duplicateSet
+	 * @return
+	 */
+	private static HashSet<String> deleteDuplicates(HashSet<String> currentSet, HashSet<String> duplicateSet){
+		HashSet<String> resultSet = new HashSet<String>();
+		for(String curString : currentSet){
+			if(!duplicateSet.contains(curString)){
+				resultSet.add(curString);
+			}
+		}
+		return resultSet;
 	}
 	
 	/**
@@ -141,6 +183,14 @@ public class Program {
 		    }
 	      
 	    return curBugSet;
+	}
+	
+	/**
+	 * Getter for Smell Directory
+	 * @return String of Smell Directory
+	 */
+	public static String getSmellDir(){
+		return smellDir;
 	}
 	
 	/**

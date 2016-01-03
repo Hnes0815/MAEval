@@ -56,8 +56,13 @@ public class CSVHelper {
 				String methodName = nextLine[2];
 				double smellScore = Double.parseDouble(nextLine[3]);
 
+				//filename muss noch beschnitten werden
+				int fileIdx = fileName.lastIndexOf("locations/") + "locations/".length();
+				int lastdotIdx = fileName.lastIndexOf(".");
+	    		String curFileStr = fileName.substring(fileIdx, lastdotIdx);
+				
 				if(smellScore >= smellThreshold)
-					smellSet.add(fileName);
+					smellSet.add(curFileStr);
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block

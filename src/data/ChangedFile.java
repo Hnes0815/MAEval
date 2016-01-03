@@ -42,8 +42,10 @@ public class ChangedFile implements Comparable<ChangedFile> {
 			return -1;
 		else if(obj.getDate().before(this.getDate()))
 			return 1;
-		else
-			return 0;
+		else{
+			return obj.getFile().compareTo(this.getFile());
+		}
+			
 	}
 	
 	

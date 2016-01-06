@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import com.opencsv.CSVReader;
 
 import data.ChangedFile;
+import main.Program;
 
 
 public class CSVHelper {
@@ -25,9 +26,6 @@ public class CSVHelper {
 	private TreeMap<ChangedFile, String> bugFiles = new TreeMap<ChangedFile, String>();
 	
 	
-	// TODO: refactoring... 
-	private BufferedReader br;
-	
 	/**
 	 * Instantiates a new CSVReader
 	 *
@@ -37,12 +35,15 @@ public class CSVHelper {
 		
 	}
 	
-	
-	public HashSet<String> getSmellsFromFileAB(String curFile, int smellThreshold){
+	/**
+	 * 
+	 * @param curFile
+	 * @param smellThreshold
+	 * @return
+	 */
+	public HashSet<String> getSmellsFromFile(String curFile, int smellThreshold){
 		String csvFile = curFile;
-		BufferedReader br = null;
-		String line = "";
-		String cvsSplitBy = ",";
+		String smellModeStr = Program.getSmellMode();
 		
 		HashSet<String> smellSet = new HashSet<String>();
 		
@@ -52,27 +53,34 @@ public class CSVHelper {
 			reader.readNext(); //erste Zeile überspringen
 			while ((nextLine = reader.readNext()) != null) {
 				String fileName = nextLine[0];
-				int startingLine = Integer.parseInt(nextLine[1]);
-				String methodName = nextLine[2];
-				double smellScore = Double.parseDouble(nextLine[3]);
-
+				//int startingLine = Integer.parseInt(nextLine[1]);
+				//String methodName = nextLine[2];
+				double smellScore;
+				if(smellModeStr.equals("AB")){
+					smellScore = Double.parseDouble(nextLine[3]);
+				}else{
+					smellScore = Double.parseDouble(nextLine[1]);
+				}
 				//filename muss noch beschnitten werden
 				int fileIdx = fileName.lastIndexOf("locations/") + "locations/".length();
 				int lastdotIdx = fileName.lastIndexOf(".");
 	    		String curFileStr = fileName.substring(fileIdx, lastdotIdx);
-				
+								
 				if(smellScore >= smellThreshold)
 					smellSet.add(curFileStr);
 			}
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
+			System.out.println("Fehler beim lesen/schreiben der Datei!");
 			e1.printStackTrace();
 		}
 		
 		return smellSet;
 	}
 	
-	
+	/**
+	 * 
+	 * @param csvString
+	 */
 	public void processFile(String csvString){
 		String csvFile = csvString;
 		BufferedReader br = null;
@@ -101,7 +109,7 @@ public class CSVHelper {
 			        //System.out.println("yyyy-MM-dd date is ==>"+formattedDate);
 			        comDate = formatter.parse(formattedDate);
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
+					System.out.println("Datum konnte nicht korrekt eingelesen werden!");
 					e.printStackTrace();
 				}
 		        
@@ -132,10 +140,47 @@ public class CSVHelper {
 		}
 	} 
 	
+	/**
+	 * 
+	 * @param curFile
+	 * @param smellThreshold
+	 * @return
+	 */
+	public static TreeMap<String, Double> getFeatureMap(String curFile, int smellThreshold){
+		String csvFile = curFile;
+		TreeMap<String, Double> featMap = new TreeMap<String, Double>();
+		
+		try {
+			CSVReader reader = new CSVReader(new FileReader(csvFile));
+			String[] nextLine;
+			reader.readNext(); //erste Zeile überspringen
+			while ((nextLine = reader.readNext()) != null) {
+				String featName = nextLine[0];	
+				double smellScore = Double.parseDouble(nextLine[1]);
+								
+				if(smellScore >= smellThreshold)
+					featMap.put(featName, smellScore);
+			}
+		} catch (IOException e1) {
+			System.out.println("Fehler beim lesen/schreiben der Datei!");
+			e1.printStackTrace();
+		}
+		
+		return featMap;
+	}
+	
+	/**
+	 * Getter for changed Files
+	 * @return
+	 */
 	public TreeMap<ChangedFile, String> getChangedFiles(){
 		return changedFiles;
 	}
 	
+	/**
+	 * Getter for BugCommits
+	 * @return
+	 */
 	public TreeMap<ChangedFile, String> getBugFiles(){
 		return bugFiles;
 	}

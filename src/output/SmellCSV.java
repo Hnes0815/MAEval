@@ -57,7 +57,7 @@ public class SmellCSV {
 	public static void processXMLFile(File smellCSV, File locationXML){
 		String fileName = smellCSV.getName();
 		File csvOut = new File(smellCSV.getAbsolutePath());
-		// TODO: für LargeFeature Analyse müssen die FileLocations aus der XML in csv Form 
+		// für LargeFeature Analyse müssen die FileLocations aus der XML in csv Form 
 		// umgewandelt werden - um die analyse dann einheitlich fortführen zu können
 		// Erste Spalte FileName - zweite Spalte SmellScore
 		
@@ -71,11 +71,11 @@ public class SmellCSV {
 			try {
 				fileSetXML = getFilesFromXML(locationXML, s);
 			} catch (ParserConfigurationException | SAXException | IOException e) {
-				// TODO Auto-generated catch block
+				System.out.println("Fehler beim lesen der XML!");
 				e.printStackTrace();
 			}
 			
-			// TODO: FeatureNamen und Score in CSV schreiben
+			// FeatureNamen und Score in CSV schreiben
 			for(String fileNameStr : fileSetXML){
 		  		BufferedWriter buff;
 				try {

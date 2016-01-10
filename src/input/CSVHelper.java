@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -167,6 +168,33 @@ public class CSVHelper {
 		}
 		
 		return featMap;
+	}
+	
+	
+	/**
+	 * 
+	 * @param projectInfo
+	 * @return
+	 */
+	public static ArrayList<String> getProjectDates(File projectInfo){
+		String filePath = projectInfo.getAbsolutePath();
+		ArrayList<String> resultList = new ArrayList<String>();
+		
+		try {
+			CSVReader reader = new CSVReader(new FileReader(filePath));
+			String[] nextLine;
+			reader.readNext(); //erste Zeile überspringen
+			while ((nextLine = reader.readNext()) != null) {
+				String dateStr = nextLine[1];	
+				
+				resultList.add(dateStr);
+			}
+		} catch (IOException e1) {
+			System.out.println("Fehler beim lesen/schreiben der Datei!");
+			e1.printStackTrace();
+		}
+		
+		return resultList;
 	}
 	
 	/**

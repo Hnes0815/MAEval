@@ -80,6 +80,8 @@ public class CSVHelper {
 	}
 	
 	/**
+	 * Nimmt die ursprüngliche CSV-Datei von MetricMiner2 und erstellt die Listen 
+	 * der Bugfixes und geänderten Dateien mit ihren Änderungsdaten
 	 * 
 	 * @param csvString
 	 */
@@ -152,6 +154,9 @@ public class CSVHelper {
 		String csvFile = curFile;
 		TreeMap<String, Double> featMap = new TreeMap<String, Double>();
 		
+		int lofcThresh = Program.getlofcThresh();
+		int nofcThresh = Program.getnofcThresh();
+		
 		try {
 			CSVReader reader = new CSVReader(new FileReader(csvFile));
 			String[] nextLine;
@@ -159,8 +164,10 @@ public class CSVHelper {
 			while ((nextLine = reader.readNext()) != null) {
 				String featName = nextLine[0];	
 				double smellScore = Double.parseDouble(nextLine[1]);
-								
-				if(smellScore >= smellThreshold)
+				int lofc = Integer.parseInt(nextLine[8]);
+				int nofc = Integer.parseInt(nextLine[6]);
+				
+				if(lofc >= lofcThresh || nofc >= nofcThresh)
 					featMap.put(featName, smellScore);
 			}
 		} catch (IOException e1) {

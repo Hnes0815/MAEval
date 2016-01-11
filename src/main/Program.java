@@ -1,6 +1,9 @@
 package main;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import input.CSVHelper;
 import input.FileFinder;
 import output.PreprocessOutput;
 import output.SmellCSV;
+import processing.Evaluation;
 import processing.Preprocessing;
 
 public class Program {
@@ -27,7 +31,8 @@ public class Program {
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
 	private static String project = "openvpn";
 	private static int smellThreshold = 0;
-	
+	private static int lofcThresh = 1112;
+	private static int nofcThresh = 56;
 	private static String smellModeStr = "";
 	
 	/**
@@ -39,14 +44,14 @@ public class Program {
 		analyzeInput(args);
 		
 		/* PREPROCESSING of the Smell Data */
-	/*
+	
 		smellModeStr = "AB";
 		Preprocessing.preprocessData(csvPath);
 		smellModeStr = "AF";
 		Preprocessing.preprocessData(csvPath);
 		smellModeStr = "LF";
 		Preprocessing.preprocessData(csvPath);
-	*/	
+	
 		
 		/* PREPROCESSING of the Project Data */
 		
@@ -103,12 +108,31 @@ public class Program {
 			
 			startDate = curDate;
 		}
+
 		
-		// TODO: Output entweder in ein File oder eher pro Datum ein File
+		// Evaluierung
+		String path = Program.getResultsDir() + Program.getProject() + "/Correlated/../corOverview.csv";
+		File csvOut = new File(path);
+		BufferedWriter buff = null;
+		try {
+			buff = new BufferedWriter(new FileWriter( csvOut, true ));
+			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC");
+			buff.newLine();
+			buff.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-	    // TODO: Liste durchgehen, pro File ein "MergedFileInfo" Objekt erstellen und zum schluss schreiben
+		String pathFind = Program.getResultsDir() + Program.getProject() + "/Correlated/";
+		System.out.println( "Suche im Pfad: " + pathFind );
+	  	List<File> filesFind = FileFinder.find( pathFind, "(.*\\.csv$)" );
 		
-		
+	  	Collections.sort(filesFind);
+	  	
+	  	for(File f : filesFind){
+	  		Evaluation.evalFile(f);
+	  	}
 	}
 	
 	
@@ -154,6 +178,13 @@ public class Program {
 		return smellThreshold;
 	}
 	
+	public static int getlofcThresh(){
+		return lofcThresh;
+	}
+	public static int getnofcThresh(){
+		return nofcThresh;
+	}
+	
 	/**
 	 * Analyze input to decide what to do during runtime
 	 *
@@ -170,7 +201,13 @@ public class Program {
 		
 		List<String> input = Arrays.asList(args);
 		
-		
+		if(input.contains("--preprocessing"))
+		{
+			//programMode = "preprocessing";
+		}
+		if(input.contains("--evaluate")){
+			//programMode = "evaluate";
+		}
 		
 		
 		return true;

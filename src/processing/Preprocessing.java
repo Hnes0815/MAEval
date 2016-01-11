@@ -125,7 +125,7 @@ public class Preprocessing {
 	 * @param f File
 	 * @return Date
 	 */
-	private static Date getDateFromFileName(File f){
+	public static Date getDateFromFileName(File f){
 		Date retDate = null;
 		
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");

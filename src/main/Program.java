@@ -15,6 +15,7 @@ import data.ChangedFile;
 import data.MergedFileInfo;
 import input.CSVHelper;
 import input.FileFinder;
+import output.PreprocessOutput;
 import output.SmellCSV;
 import processing.Preprocessing;
 
@@ -37,6 +38,7 @@ public class Program {
 	public static void main(String[] args){
 		analyzeInput(args);
 		
+		/* PREPROCESSING of the Smell Data */
 	/*
 		smellModeStr = "AB";
 		Preprocessing.preprocessData(csvPath);
@@ -46,13 +48,13 @@ public class Program {
 		Preprocessing.preprocessData(csvPath);
 	*/	
 		
+		/* PREPROCESSING of the Project Data */
+		
 		CSVHelper csvReader = new CSVHelper();
+		csvReader.processFile(csvPath);
 		TreeMap<ChangedFile, String> bugMap = csvReader.getBugFiles();
-		TreeMap<ChangedFile, String> changedMap = csvReader.getChangedFiles();
-		
-		
-		
-		ArrayList<MergedFileInfo> outputList = new ArrayList<MergedFileInfo>();
+		TreeMap<ChangedFile, String> changedMap = csvReader.getChangedFiles();		
+				
 		File projectInfo = new File(resultsDir + project + "/projectInfo.csv");
 		ArrayList<Date> versionDates = new ArrayList<Date>();
 		versionDates = CSVHelper.getProjectDates(projectInfo);
@@ -63,6 +65,7 @@ public class Program {
 			if(startDate.equals(curDate)){
 				continue;
 			}
+			ArrayList<MergedFileInfo> outputList = new ArrayList<MergedFileInfo>();
 			
 			HashSet<String> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
 			HashSet<String> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
@@ -92,13 +95,17 @@ public class Program {
 				outputList.add(fileInfo);
 			}
 			
+			// Output
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String dateStr = formatter.format(startDate);
+			PreprocessOutput.writeCSV(outputList, dateStr);
+			
+			
 			startDate = curDate;
 		}
 		
 		// TODO: Output entweder in ein File oder eher pro Datum ein File
-		for(MergedFileInfo info : outputList){
-			System.out.println(info);
-		}
+		
 	    // TODO: Liste durchgehen, pro File ein "MergedFileInfo" Objekt erstellen und zum schluss schreiben
 		
 		

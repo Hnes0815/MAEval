@@ -54,14 +54,36 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 		this.hasFixed = true;
 	}
 	
+	
 	public String getFilename(){
 		return filename;
 	}
 	public Date getDate(){
 		return versDate;
 	}
+	public boolean getSmellAB(){
+		return smellAB;
+	}
+	public boolean getSmellAF(){
+		return smellAF;
+	}
+	public boolean getSmellLF(){
+		return smellLF;
+	}
+	public int getSmellCount(){
+		return smellCount;
+	}
+	public boolean gethasSmell(){
+		return hasSmell;
+	}
+	public boolean gethasChanged(){
+		return hasChanged;
+	}
+	public boolean gethasFixed(){
+		return hasFixed;
+	}
 	
-
+	
 	@Override
 	public String toString(){
 		return this.filename + " - Smell: " + this.hasSmell + " - Fixed: " + this.hasFixed + " - Changed: " + this.hasChanged + " - " + this.versDate;

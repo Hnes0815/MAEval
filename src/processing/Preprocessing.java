@@ -39,7 +39,7 @@ public class Preprocessing {
   	    System.out.println( "Suche im Pfad: " + pathFind );
   	    List<File> filesFind = FileFinder.find( pathFind, "(.*\\.csv$)" );
     
-  	    // TODO: für LargeFeature Analyse müssen die FileLocations aus der XML in csv Form 
+  	    // für LargeFeature Analyse müssen die FileLocations aus der XML in csv Form 
   		// umgewandelt werden - um die analyse dann einheitlich fortführen zu können
   		// Erste Spalte FileName - zweite Spalte SmellScore
   		if(smellModeStr.equals("LF")){
@@ -145,7 +145,6 @@ public class Preprocessing {
 	}
 	
 	
-	// TODO: in eigene Klasse verfrachten um es für mehrere Klassen nutzbar zu machen
 	/**
 	 * Lädt alle Dateien aus einer TreeMap<ChangedFile, String> zwischen zwei Daten in ein Set
 	 * 

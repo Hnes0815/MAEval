@@ -27,7 +27,7 @@ public class Preprocessing {
 		CSVHelper csvReader = new CSVHelper();
 		
 		csvReader.processFile(csvPath);
-		TreeMap<ChangedFile, String> bugMap = csvReader.getBugFiles();
+	//	TreeMap<ChangedFile, String> bugMap = csvReader.getBugFiles();
 		TreeMap<ChangedFile, String> changedMap = csvReader.getChangedFiles();
 		
 		
@@ -154,7 +154,7 @@ public class Preprocessing {
 	 * @param endDate
 	 * @return alle Bugfixes zwischen StartDate und EndDate
 	 */
-	private static HashSet<String> getCurFiles(TreeMap<ChangedFile, String> bugMap, Date startDate, Date endDate){
+	public static HashSet<String> getCurFiles(TreeMap<ChangedFile, String> bugMap, Date startDate, Date endDate){
 		HashSet<String> curBugSet = new HashSet<String>();
 	      for(ChangedFile keySec : bugMap.keySet())
 		    {

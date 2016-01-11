@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import data.ChangedFile;
+import data.MergedFileInfo;
 import input.CSVHelper;
 import input.FileFinder;
 import output.SmellCSV;
@@ -36,39 +37,74 @@ public class Program {
 	public static void main(String[] args){
 		analyzeInput(args);
 		
+	/*
 		smellModeStr = "AB";
 		Preprocessing.preprocessData(csvPath);
 		smellModeStr = "AF";
 		Preprocessing.preprocessData(csvPath);
 		smellModeStr = "LF";
 		Preprocessing.preprocessData(csvPath);
+	*/	
 		
-
+		CSVHelper csvReader = new CSVHelper();
+		TreeMap<ChangedFile, String> bugMap = csvReader.getBugFiles();
+		TreeMap<ChangedFile, String> changedMap = csvReader.getChangedFiles();
 		
-		// TODO : Die eben erstellte CSV Datei mit den gesammelten Smells muss 
-		//			mit den Bugfixes korreliert werden
-		// SmellFixEval.correlateSmellFixes(smellCSV, fixCSV);
+		
+		
+		ArrayList<MergedFileInfo> outputList = new ArrayList<MergedFileInfo>();
 		File projectInfo = new File(resultsDir + project + "/projectInfo.csv");
-		ArrayList<String> versionDates = new ArrayList<String>();
+		ArrayList<Date> versionDates = new ArrayList<Date>();
 		versionDates = CSVHelper.getProjectDates(projectInfo);
 		
+		Date startDate = versionDates.get(0);
+		
+		for(Date curDate : versionDates){
+			if(startDate.equals(curDate)){
+				continue;
+			}
+			
+			HashSet<String> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
+			HashSet<String> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
+			
+			HashSet<String> smellABSet = CSVHelper.getSmells(startDate, "AB");
+			HashSet<String> smellAFSet = CSVHelper.getSmells(startDate, "AF");
+			HashSet<String> smellLFSet = CSVHelper.getSmells(startDate, "LF");
+			
+			HashSet<String> fileSet = CSVHelper.getVersionFiles(startDate);
+			for(String s : fileSet){
+				MergedFileInfo fileInfo = new MergedFileInfo(s, startDate);
+				if(curBugSet.contains(s))
+					fileInfo.sethasFixed();
+				
+				if(curChangedSet.contains(s))
+					fileInfo.sethasChanged();
+				
+				if(smellABSet.contains(s))
+					fileInfo.setSmellAB();
+				
+				if(smellAFSet.contains(s))
+					fileInfo.setSmellAF();
+				
+				if(smellLFSet.contains(s))
+					fileInfo.setSmellLF();
+				
+				outputList.add(fileInfo);
+			}
+			
+			startDate = curDate;
+		}
+		
+		// TODO: Output entweder in ein File oder eher pro Datum ein File
+		for(MergedFileInfo info : outputList){
+			System.out.println(info);
+		}
 	    // TODO: Liste durchgehen, pro File ein "MergedFileInfo" Objekt erstellen und zum schluss schreiben
 		
-		/* Lädt alle gebugfixten Dateien zwischen zwei Daten in ein Set */
-		//HashSet<String> curBugSet = getCurFiles(bugMap, prevDate, curDate);
 		
-		/* 
-		 * Lädt alle geänderten Dateien zwischen zwei Daten in ein Set ... 
-		 * funktioniert mit gleicher Funktion nur andere Map rein
-		 */
-		//HashSet<String>	curChangedSet = getCurFiles(changedMap, prevDate, curDate);	
-	      
-	      
-	    // kleines Debugging
-	    //for(String curStr : curChangedSet){
-	    //	System.out.println("File: " + curStr);
-	    //}
 	}
+	
+	
 	
 	
 	/**

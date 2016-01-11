@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.TreeMap;
 
 import com.opencsv.CSVReader;
@@ -170,24 +171,121 @@ public class CSVHelper {
 		return featMap;
 	}
 	
+	/**
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static HashSet<String> getVersionFiles(Date date){
+		HashSet<String> resultSet = new HashSet<String>();
+		
+		String resultsDir = Program.getResultsDir();
+		String project = Program.getProject();
+		
+		try {
+			CSVReader reader = new CSVReader(new FileReader(resultsDir + project + "/projectAnalysis.csv"));
+			String[] nextLine;
+			reader.readNext(); //erste Zeile überspringen
+			while ((nextLine = reader.readNext()) != null) {
+				String fileName = nextLine[0];	
+				String dateStr = nextLine[1];
+								
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Date verDate = null;
+				try {
+					verDate = formatter.parse(dateStr);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
+						
+				if(verDate.equals(date))
+					resultSet.add(fileName);
+			}
+		} catch (IOException e1) {
+			System.out.println("Fehler beim lesen/schreiben der Datei!");
+			e1.printStackTrace();
+		}
+		
+		
+		return resultSet;
+	}
+	
+	public static HashSet<String> getSmells(Date date, String mode){
+		HashSet<String> resultSet = new HashSet<String>();
+		
+		String resultsDir = Program.getResultsDir();
+		String project = Program.getProject();
+		
+		try {
+			CSVReader reader = null;
+			if(mode.equals("AB")){
+				reader = new CSVReader(new FileReader(resultsDir + project + "/" + mode + "smellOverview.csv"));
+			}else if(mode.equals("AF")){
+				reader = new CSVReader(new FileReader(resultsDir + project + "/" + mode + "smellOverview.csv"));
+			}else if(mode.equals("LF")){
+				reader = new CSVReader(new FileReader(resultsDir + project + "/" + mode + "smellOverview.csv"));
+			}else{
+				System.out.println("Something went wrong!");
+			}
+		    //reader = new CSVReader(new FileReader(resultsDir + project + "/projectAnalysis.csv"));
+			String[] nextLine;
+			reader.readNext(); //erste Zeile überspringen
+			while ((nextLine = reader.readNext()) != null) {
+				String fileName = nextLine[0];	
+				String dateStr = nextLine[1];
+					
+				//System.out.println(dateStr);
+				
+				SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy" , Locale.ENGLISH);				
+				
+				Date verDate = null;
+				try {
+					verDate = formatter.parse(dateStr);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
+						
+				if(verDate.equals(date))
+					resultSet.add(fileName);
+			}
+		} catch (IOException e1) {
+			System.out.println("Fehler beim lesen/schreiben der Datei!");
+			e1.printStackTrace();
+		}
+		
+		
+		return resultSet;
+	}
 	
 	/**
 	 * 
 	 * @param projectInfo
 	 * @return
 	 */
-	public static ArrayList<String> getProjectDates(File projectInfo){
+	public static ArrayList<Date> getProjectDates(File projectInfo){
 		String filePath = projectInfo.getAbsolutePath();
-		ArrayList<String> resultList = new ArrayList<String>();
+		ArrayList<Date> resultList = new ArrayList<Date>();
 		
 		try {
 			CSVReader reader = new CSVReader(new FileReader(filePath));
 			String[] nextLine;
-			reader.readNext(); //erste Zeile überspringen
 			while ((nextLine = reader.readNext()) != null) {
 				String dateStr = nextLine[1];	
 				
-				resultList.add(dateStr);
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Date verDate = null;
+				try {
+					verDate = formatter.parse(dateStr);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				resultList.add(verDate);
 			}
 		} catch (IOException e1) {
 			System.out.println("Fehler beim lesen/schreiben der Datei!");

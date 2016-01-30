@@ -26,10 +26,10 @@ import processing.Preprocessing;
 public class Program {
 
 	// TODO: argumente einsetzen
-	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/openvpn/revisionsFull.csv";
-	private static String smellDir = "/home/hnes/Masterarbeit/Results/openvpn/ABRes";
+	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/busybox/revisionsFull.csv";
+	private static String smellDir = "/home/hnes/Masterarbeit/Results/busybox/ABRes";
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
-	private static String project = "openvpn";
+	private static String project = "busybox";
 	private static int smellThreshold = 0;
 	private static int lofcThresh = 1112;
 	private static int nofcThresh = 56;
@@ -57,9 +57,13 @@ public class Program {
 		
 		CSVHelper csvReader = new CSVHelper();
 		csvReader.processFile(csvPath);
+		csvReader.processFileSingle(csvPath);
 		TreeMap<ChangedFile, String> bugMap = csvReader.getBugFiles();
 		TreeMap<ChangedFile, String> changedMap = csvReader.getChangedFiles();		
-				
+		TreeMap<ChangedFile, String> bugMapSingle = csvReader.getBugFilesSingle();
+		TreeMap<ChangedFile, String> changedMapSingle = csvReader.getChangedFilesSingle();
+		
+		
 		File projectInfo = new File(resultsDir + project + "/projectInfo.csv");
 		ArrayList<Date> versionDates = new ArrayList<Date>();
 		versionDates = CSVHelper.getProjectDates(projectInfo);
@@ -75,9 +79,14 @@ public class Program {
 			HashSet<String> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
 			HashSet<String> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
 			
+			HashSet<String> curBugSetSingle = Preprocessing.getCurFiles(bugMapSingle, startDate, curDate);
+			HashSet<String> curChangedSetSingle = Preprocessing.getCurFiles(changedMapSingle, startDate, curDate);
+			
 			HashSet<String> smellABSet = CSVHelper.getSmells(startDate, "AB");
 			HashSet<String> smellAFSet = CSVHelper.getSmells(startDate, "AF");
 			HashSet<String> smellLFSet = CSVHelper.getSmells(startDate, "LF");
+			
+			HashSet<String> curVersionSmellyFiles = new HashSet<String>();
 			
 			HashSet<String> fileSet = CSVHelper.getVersionFiles(startDate);
 			for(String s : fileSet){
@@ -88,21 +97,81 @@ public class Program {
 				if(curChangedSet.contains(s))
 					fileInfo.sethasChanged();
 				
-				if(smellABSet.contains(s))
+				if(smellABSet.contains(s)){
+					curVersionSmellyFiles.add(s);
 					fileInfo.setSmellAB();
+				}
 				
-				if(smellAFSet.contains(s))
+				if(smellAFSet.contains(s)){
+					curVersionSmellyFiles.add(s);
 					fileInfo.setSmellAF();
+				}
 				
-				if(smellLFSet.contains(s))
+				if(smellLFSet.contains(s)){
+					curVersionSmellyFiles.add(s);
 					fileInfo.setSmellLF();
+				}
 				
 				outputList.add(fileInfo);
 			}
 			
-			// Output
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			String dateStr = formatter.format(startDate);
+						// Output
+						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+						String dateStr = formatter.format(startDate);
+			
+			// DEBUG NEU
+			for(String s : curBugSetSingle){
+				System.out.println(s);
+			}
+			
+			String path = Program.getResultsDir() + Program.getProject() + "/Correlated/";
+			File mkDir = new File(path);
+			mkDir.mkdirs();
+			File csvOut = new File(path + dateStr +"_ratio.csv");
+			BufferedWriter buff = null;
+			
+			
+			// Commits von 0 bis 99 durchgehen
+			for(int i = 0; i<100; i++){
+				int smellyFix = 0;
+				int nonSmellyFix = 0;
+				
+				// Die Commit Files durchgehen 
+				for(String fixedFile : curBugSetSingle){
+					if(i < 10){
+						if(fixedFile.contains("0"+i)){							// wenn der aktuelle Commit in der Datei steht
+							String compFile = fixedFile.substring(fixedFile.length() - 2, fixedFile.length());	// die Commitnummer aus dem File löschen
+							if(curVersionSmellyFiles.contains(compFile)){		// wenn das gefixte File in den Smelly Files steht
+								smellyFix++;									// gefixte smellyFiles hochzählen
+							}else{												// sonst
+								nonSmellyFix++;									// fixes in nonSmellyFiles hochzählen
+							}
+						}
+					}else{
+						if(fixedFile.contains(String.valueOf(i))){
+							String compFile = fixedFile.substring(fixedFile.length() - 2, fixedFile.length());
+							if(curVersionSmellyFiles.contains(compFile)){
+								smellyFix++;
+							}else{
+								nonSmellyFix++;
+							}
+						}
+					}
+				}
+				
+				try {
+					buff = new BufferedWriter(new FileWriter( csvOut, true ));
+					buff.write(smellyFix +","+ nonSmellyFix);
+					buff.newLine();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			
+			
+			
 			PreprocessOutput.writeCSV(outputList, dateStr);
 			
 			
@@ -110,13 +179,15 @@ public class Program {
 		}
 
 		
+		
+		
 		// Evaluierung
 		String path = Program.getResultsDir() + Program.getProject() + "/Correlated/../corOverview.csv";
 		File csvOut = new File(path);
 		BufferedWriter buff = null;
 		try {
 			buff = new BufferedWriter(new FileWriter( csvOut, true ));
-			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC");
+			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC, sABC, sAFC, sLFC");
 			buff.newLine();
 			buff.close();
 		} catch (IOException e) {

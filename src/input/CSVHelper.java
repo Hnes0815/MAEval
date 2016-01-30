@@ -27,6 +27,11 @@ public class CSVHelper {
 	// Liste für jeden x-ten Bugfix Commit
 	private TreeMap<ChangedFile, String> bugFiles = new TreeMap<ChangedFile, String>();
 	
+	// Liste für geänderte Dateien
+		private TreeMap<ChangedFile, String> changedFilesSingle = new TreeMap<ChangedFile, String>();
+		// Liste für jeden x-ten Bugfix Commit
+		private TreeMap<ChangedFile, String> bugFilesSingle = new TreeMap<ChangedFile, String>();
+	
 	
 	/**
 	 * Instantiates a new CSVReader
@@ -143,6 +148,86 @@ public class CSVHelper {
 			}
 		}
 	} 
+	
+	/**
+	 * Nimmt die ursprüngliche CSV-Datei von MetricMiner2 und erstellt die Listen 
+	 * der Bugfixes und geänderten Dateien mit ihren Änderungsdaten
+	 * 
+	 * @param csvString
+	 */
+	public void processFileSingle(String csvString){
+		String csvFile = csvString;
+		BufferedReader br = null;
+		String line = "";
+		String cvsSplitBy = ",";
+		
+		int bugfixCounter = 0;
+		
+		try {
+
+			br = new BufferedReader(new FileReader(csvFile));
+			while ((line = br.readLine()) != null) {
+				
+				
+			    // use comma as separator
+				String[] commit = line.split(cvsSplitBy);
+				String curHash = commit[0];
+				boolean bugfixCommit = Boolean.parseBoolean(commit[1]);
+				int bugfixCount = Integer.parseInt(commit[8]);
+				String strDate = commit[7];
+				String fileName = null;
+				if(bugfixCounter < 10){
+					fileName = commit[3] + "0" +bugfixCounter;
+				}else{
+					fileName = commit[3] + bugfixCounter;
+				}
+				
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		        Date dateStr;
+		        Date comDate = null;
+				try {
+					dateStr = formatter.parse(strDate);
+					String formattedDate = formatter.format(dateStr);
+			        //System.out.println("yyyy-MM-dd date is ==>"+formattedDate);
+			        comDate = formatter.parse(formattedDate);
+				} catch (ParseException e) {
+					System.out.println("Datum konnte nicht korrekt eingelesen werden!");
+					e.printStackTrace();
+				}
+		        
+				
+				//System.out.println("Hash: " + curHash 
+	            //                     + " , isBugfix: " + bugfixCommit 
+	            //                     + " , Datum: " + comDate);
+
+				ChangedFile chFile = new ChangedFile(fileName, curHash, comDate);
+				
+				changedFilesSingle.put(chFile, fileName);
+				if(bugfixCommit)
+					bugFilesSingle.put(chFile, fileName);
+				
+				
+				bugfixCounter++;
+				if(bugfixCounter == 100){
+					bugfixCounter = 0;
+				}
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	} 
+	
 	
 	/**
 	 * 
@@ -316,6 +401,22 @@ public class CSVHelper {
 	 */
 	public TreeMap<ChangedFile, String> getBugFiles(){
 		return bugFiles;
+	}
+	
+	/**
+	 * Getter for changed Files
+	 * @return
+	 */
+	public TreeMap<ChangedFile, String> getChangedFilesSingle(){
+		return changedFilesSingle;
+	}
+	
+	/**
+	 * Getter for BugCommits
+	 * @return
+	 */
+	public TreeMap<ChangedFile, String> getBugFilesSingle(){
+		return bugFilesSingle;
 	}
 }
 

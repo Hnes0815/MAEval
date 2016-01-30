@@ -26,6 +26,9 @@ public class Evaluation {
 		double nonSmellChanged = 0;
 		double nonSmellNotFixed = 0;
 		double nonSmellNotChanged = 0;
+		int abCount = 0;
+		int afCount = 0;
+		int lfCount = 0;
 		Date date = Preprocessing.getDateFromFileName(file);
 		
 		try {
@@ -64,6 +67,16 @@ public class Evaluation {
 						}
 					}
 				}
+				
+				if(nextLine[1].equals("1")){
+					abCount++;
+				}
+				if(nextLine[2].equals("1")){
+					afCount++;
+				}
+				if(nextLine[3].equals("1")){
+					lfCount++;
+				}
 			}
 		} catch (IOException e1) {
 			System.out.println("Fehler beim lesen/schreiben der Datei!");
@@ -90,7 +103,7 @@ public class Evaluation {
 			//buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC");
 			buff.write(date + "," + (int) smellFixed + "," + (int) smellNotFixed + "," + (int) nonSmellFixed + "," + (int) nonSmellNotFixed
 					+ "," + (int) smellChanged + "," + (int) smellNotChanged + "," + (int) nonSmellChanged+ "," + (int) nonSmellNotChanged
-					+ "," + orFixed + "," + orChanged);
+					+ "," + orFixed + "," + orChanged + "," + abCount + "," + afCount + "," + lfCount);
 			buff.newLine();
 			buff.close();
 		} catch (IOException e) {

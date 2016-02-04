@@ -120,16 +120,17 @@ public class Program {
 						String dateStr = formatter.format(startDate);
 			
 			// DEBUG NEU
-			for(String s : curBugSetSingle){
-				System.out.println(s);
-			}
+			//for(String s : curBugSetSingle){
+			//	System.out.println(s);
+			//}
 			
-			String path = Program.getResultsDir() + Program.getProject() + "/Correlated/";
+			String path = Program.getResultsDir() + Program.getProject() + "/CorrelatedRatio/";
 			File mkDir = new File(path);
 			mkDir.mkdirs();
 			File csvOut = new File(path + dateStr +"_ratio.csv");
-			BufferedWriter buff = null;
-			
+			BufferedWriter buffW = null;
+			int smellyFixAmount = 0;
+			int nonSmellyFixAmount = 0;
 			
 			// Commits von 0 bis 99 durchgehen
 			for(int i = 0; i<100; i++){
@@ -139,37 +140,56 @@ public class Program {
 				// Die Commit Files durchgehen 
 				for(String fixedFile : curBugSetSingle){
 					if(i < 10){
-						if(fixedFile.contains("0"+i)){							// wenn der aktuelle Commit in der Datei steht
-							String compFile = fixedFile.substring(fixedFile.length() - 2, fixedFile.length());	// die Commitnummer aus dem File löschen
+						if(fixedFile.contains("0"+i)){		// wenn der aktuelle Commit in der Datei steht
+			//				System.out.println("FixedFile: "+fixedFile);
+							String compFile = fixedFile.substring(0, fixedFile.length()- 2);	// die Commitnummer aus dem File löschen
+			//				System.out.println("CompFile: "+ compFile);
 							if(curVersionSmellyFiles.contains(compFile)){		// wenn das gefixte File in den Smelly Files steht
-								smellyFix++;									// gefixte smellyFiles hochzählen
+								smellyFix++;// gefixte smellyFiles hochzählen
+								smellyFixAmount++;
 							}else{												// sonst
 								nonSmellyFix++;									// fixes in nonSmellyFiles hochzählen
+								nonSmellyFixAmount++;
 							}
 						}
 					}else{
 						if(fixedFile.contains(String.valueOf(i))){
-							String compFile = fixedFile.substring(fixedFile.length() - 2, fixedFile.length());
+							String compFile = fixedFile.substring(0, fixedFile.length()-2);
 							if(curVersionSmellyFiles.contains(compFile)){
 								smellyFix++;
+								smellyFixAmount++;
 							}else{
 								nonSmellyFix++;
+								nonSmellyFixAmount++;
 							}
 						}
 					}
 				}
 				
+				//System.out.println("Zeile : " + i);
+				
 				try {
-					buff = new BufferedWriter(new FileWriter( csvOut, true ));
-					buff.write(smellyFix +","+ nonSmellyFix);
-					buff.newLine();
+				//	System.out.println("Test");
+					buffW = new BufferedWriter(new FileWriter( csvOut, true ));
+					buffW.write(smellyFix +","+ nonSmellyFix);
+					buffW.newLine();
+					buffW.flush();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			
-			
+			try {
+				buffW = new BufferedWriter(new FileWriter( csvOut, true ));
+				buffW.write(smellyFixAmount +","+ nonSmellyFixAmount);
+				buffW.newLine();
+				buffW.flush();
+				buffW.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			
 			PreprocessOutput.writeCSV(outputList, dateStr);
@@ -187,7 +207,7 @@ public class Program {
 		BufferedWriter buff = null;
 		try {
 			buff = new BufferedWriter(new FileWriter( csvOut, true ));
-			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC, sABC, sAFC, sLFC");
+			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC, sABC, sAFC, sLFC, smellAmount, nSmellAmount");
 			buff.newLine();
 			buff.close();
 		} catch (IOException e) {

@@ -95,6 +95,9 @@ public class Evaluation {
 			orChanged = ((smellChanged / smellNotChanged) / (nonSmellChanged / nonSmellNotChanged));
 		}
 		
+		int smellyAmount = (int) smellFixed + (int) smellNotFixed;
+		int nonSmellyAmount = (int) nonSmellFixed + (int) nonSmellNotFixed;
+		
 		String path = Program.getResultsDir() + Program.getProject() + "/Correlated/../corOverview.csv";
 		File csvOut = new File(path);
 		BufferedWriter buff = null;
@@ -103,7 +106,7 @@ public class Evaluation {
 			//buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC");
 			buff.write(date + "," + (int) smellFixed + "," + (int) smellNotFixed + "," + (int) nonSmellFixed + "," + (int) nonSmellNotFixed
 					+ "," + (int) smellChanged + "," + (int) smellNotChanged + "," + (int) nonSmellChanged+ "," + (int) nonSmellNotChanged
-					+ "," + orFixed + "," + orChanged + "," + abCount + "," + afCount + "," + lfCount);
+					+ "," + orFixed + "," + orChanged + "," + abCount + "," + afCount + "," + lfCount + "," + smellyAmount + "," + nonSmellyAmount);
 			buff.newLine();
 			buff.close();
 		} catch (IOException e) {

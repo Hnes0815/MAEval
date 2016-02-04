@@ -161,7 +161,7 @@ public class CSVHelper {
 		String line = "";
 		String cvsSplitBy = ",";
 		
-		int bugfixCounter = 0;
+		
 		
 		try {
 
@@ -173,13 +173,13 @@ public class CSVHelper {
 				String[] commit = line.split(cvsSplitBy);
 				String curHash = commit[0];
 				boolean bugfixCommit = Boolean.parseBoolean(commit[1]);
-				int bugfixCount = Integer.parseInt(commit[8]);
+				int bugfixCount = (Integer.parseInt(commit[8]) -1) % 100;
 				String strDate = commit[7];
 				String fileName = null;
-				if(bugfixCounter < 10){
-					fileName = commit[3] + "0" +bugfixCounter;
+				if(bugfixCount < 10){
+					fileName = commit[3] + "0" +bugfixCount;
 				}else{
-					fileName = commit[3] + bugfixCounter;
+					fileName = commit[3] + bugfixCount;
 				}
 				
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -207,10 +207,7 @@ public class CSVHelper {
 					bugFilesSingle.put(chFile, fileName);
 				
 				
-				bugfixCounter++;
-				if(bugfixCounter == 100){
-					bugfixCounter = 0;
-				}
+				
 			}
 
 		} catch (FileNotFoundException e) {

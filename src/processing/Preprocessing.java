@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
@@ -82,7 +83,7 @@ public class Preprocessing {
 			}else{
 				// ansonsten müssen erst die geänderten Daten rausgerechnet werden
 				// lädt alle geänderten Dateien zwischen zwei Daten in ein Set
-				HashSet<String>	curChangedSet = getCurFiles(changedMap, startDate, endDate);
+				HashMap<String, Integer> curChangedSet = getCurFiles(changedMap, startDate, endDate);
 				
 				// nimmt ursprüngliche Smell Liste und löscht alle geänderten Files raus
 				HashSet<String> notChangedSet = deleteDuplicates(prevSmellyFileSet, curChangedSet);
@@ -109,10 +110,10 @@ public class Preprocessing {
 	 * @param duplicateSet
 	 * @return
 	 */
-	private static HashSet<String> deleteDuplicates(HashSet<String> currentSet, HashSet<String> duplicateSet){
+	private static HashSet<String> deleteDuplicates(HashSet<String> currentSet, HashMap<String, Integer> duplicateSet){
 		HashSet<String> resultSet = new HashSet<String>();
 		for(String curString : currentSet){
-			if(!duplicateSet.contains(curString)){
+			if(!duplicateSet.containsKey(curString)){
 				resultSet.add(curString);
 			}
 		}
@@ -153,8 +154,8 @@ public class Preprocessing {
 	 * @param endDate
 	 * @return alle Bugfixes zwischen StartDate und EndDate
 	 */
-	public static HashSet<String> getCurFiles(TreeMap<ChangedFile, String> bugMap, Date startDate, Date endDate){
-		HashSet<String> curBugSet = new HashSet<String>();
+	public static HashMap<String, Integer> getCurFiles(TreeMap<ChangedFile, String> bugMap, Date startDate, Date endDate){
+		HashMap<String, Integer> curBugSet = new HashMap<String, Integer>();
 	      for(ChangedFile keySec : bugMap.keySet())
 		    {
 			  if(startDate.after(keySec.getDate())) continue;
@@ -162,7 +163,14 @@ public class Preprocessing {
 		      //System.out.print("Key: " + keySec.getDate() + " - ");
 		      //System.out.print("Value: " + bugMap.get(keySec) + "\n");
 		      
-		      curBugSet.add(bugMap.get(keySec));
+		      //curBugSet.add(bugMap.get(keySec));
+			  
+			  if(curBugSet.containsKey(keySec.getFile())){
+				  int counter = curBugSet.get(keySec.getFile());
+				  curBugSet.put(keySec.getFile(), ++counter);
+			  }else{
+				  curBugSet.put(keySec.getFile(), 1);
+			  }
 		    }
 	      
 	    return curBugSet;

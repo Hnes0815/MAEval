@@ -19,7 +19,7 @@ public class PreprocessOutput {
 		BufferedWriter buff = null;
 		try {
 			buff = new BufferedWriter(new FileWriter( csvOut, true ));
-			buff.write("Filename, Annotation Bundle, Annotation File, Large Feature, Smell Count, hasS, hasF, hasC");
+			buff.write("Filename, Annotation Bundle, Annotation File, Large Feature, Smell Count, hasS, hasF, hasC, FixCount, ChangeCount");
 			buff.newLine();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -27,7 +27,7 @@ public class PreprocessOutput {
 		}
 		
 		for(MergedFileInfo info : outputList){
-			System.out.println(info);
+			//System.out.println(info);
 			
 			try {
 				
@@ -39,7 +39,7 @@ public class PreprocessOutput {
 				String hasChanged = (info.gethasChanged()) ? "YES" : "NO";
 				buff.write( info.getFilename() + "," + smellAB + "," + smellAF + "," 
 							+ smellLF + "," + info.getSmellCount() + "," + hasSmell + "," 
-						    + hasFixed + "," + hasChanged);
+						    + hasFixed + "," + hasChanged + "," + info.getFixCount() + "," + info.getChangeCount());
 			    buff.newLine();
 			    
 			} catch (IOException e1) {

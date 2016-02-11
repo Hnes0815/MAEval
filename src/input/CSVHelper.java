@@ -28,9 +28,9 @@ public class CSVHelper {
 	private TreeMap<ChangedFile, String> bugFiles = new TreeMap<ChangedFile, String>();
 	
 	// Liste für geänderte Dateien
-		private TreeMap<ChangedFile, String> changedFilesSingle = new TreeMap<ChangedFile, String>();
-		// Liste für jeden x-ten Bugfix Commit
-		private TreeMap<ChangedFile, String> bugFilesSingle = new TreeMap<ChangedFile, String>();
+	private TreeMap<ChangedFile, String> changedFilesSingle = new TreeMap<ChangedFile, String>();
+	// Liste für jeden x-ten Bugfix Commit
+	private TreeMap<ChangedFile, String> bugFilesSingle = new TreeMap<ChangedFile, String>();
 	
 	
 	/**

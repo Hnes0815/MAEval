@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
@@ -63,6 +64,13 @@ public class Program {
 		TreeMap<ChangedFile, String> bugMapSingle = csvReader.getBugFilesSingle();
 		TreeMap<ChangedFile, String> changedMapSingle = csvReader.getChangedFilesSingle();
 		
+		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		System.out.println("BUGMAP AUSGABE");
+		for(ChangedFile chFile : bugMap.keySet()){
+			System.out.println(chFile.getHash() + " - " + chFile.getDate() + " - " + chFile.getFile());
+		}
+		System.out.println("BUGMAP AUSGABE ENDE");
+		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		File projectInfo = new File(resultsDir + project + "/projectInfo.csv");
 		ArrayList<Date> versionDates = new ArrayList<Date>();
@@ -76,11 +84,30 @@ public class Program {
 			}
 			ArrayList<MergedFileInfo> outputList = new ArrayList<MergedFileInfo>();
 			
-			HashSet<String> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
-			HashSet<String> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
+			// Vorbereitung für MergedFileInfos
+			HashMap<String, Integer> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
+			HashMap<String, Integer> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
 			
-			HashSet<String> curBugSetSingle = Preprocessing.getCurFiles(bugMapSingle, startDate, curDate);
-			HashSet<String> curChangedSetSingle = Preprocessing.getCurFiles(changedMapSingle, startDate, curDate);
+			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			System.out.println("CURBUGSET AUSGABE");
+			for(String strFile : curBugSet.keySet()){
+				System.out.println(strFile + " - " + curBugSet.get(strFile));
+			}
+			System.out.println("CURBUGSET AUSGABE ENDE");
+			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			
+			// Vorbereitung für einzelne Commits
+			HashMap<String, Integer> curBugSetSingle = Preprocessing.getCurFiles(bugMapSingle, startDate, curDate);
+			HashMap<String, Integer> curChangedSetSingle = Preprocessing.getCurFiles(changedMapSingle, startDate, curDate);
+			
+			
+			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			System.out.println("CURBUGSET SINGLE AUSGABE");
+			for(String strFile : curBugSetSingle.keySet()){
+				System.out.println(strFile + " - " + curBugSetSingle.get(strFile));
+			}
+			System.out.println("CURBUGSET SINGLE AUSGABE ENDE");
+			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			
 			HashSet<String> smellABSet = CSVHelper.getSmells(startDate, "AB");
 			HashSet<String> smellAFSet = CSVHelper.getSmells(startDate, "AF");
@@ -91,11 +118,15 @@ public class Program {
 			HashSet<String> fileSet = CSVHelper.getVersionFiles(startDate);
 			for(String s : fileSet){
 				MergedFileInfo fileInfo = new MergedFileInfo(s, startDate);
-				if(curBugSet.contains(s))
+				if(curBugSet.containsKey(s)){
 					fileInfo.sethasFixed();
+					fileInfo.setFixCount(curBugSet.get(s));
+				}
 				
-				if(curChangedSet.contains(s))
+				if(curChangedSet.containsKey(s)){
 					fileInfo.sethasChanged();
+					fileInfo.setChangeCount(curChangedSet.get(s));
+				}
 				
 				if(smellABSet.contains(s)){
 					curVersionSmellyFiles.add(s);
@@ -124,6 +155,8 @@ public class Program {
 			//	System.out.println(s);
 			//}
 			
+		
+						
 			String path = Program.getResultsDir() + Program.getProject() + "/CorrelatedRatio/";
 			File mkDir = new File(path);
 			mkDir.mkdirs();
@@ -138,7 +171,7 @@ public class Program {
 				int nonSmellyFix = 0;
 				
 				// Die Commit Files durchgehen 
-				for(String fixedFile : curBugSetSingle){
+				for(String fixedFile : curBugSetSingle.keySet()){
 					if(i < 10){
 						if(fixedFile.contains("0"+i)){		// wenn der aktuelle Commit in der Datei steht
 			//				System.out.println("FixedFile: "+fixedFile);

@@ -14,6 +14,8 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	private String version;
 	private Date versDate;
 	private int smellCount;
+	private int fixCount;
+	private int changeCount;
 	
 	public MergedFileInfo(String filename, Date verDate){
 		this.filename = filename;
@@ -53,7 +55,12 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	public void sethasFixed(){
 		this.hasFixed = true;
 	}
-	
+	public void setFixCount(Integer count){
+		this.fixCount = count;
+	}
+	public void setChangeCount(Integer count){
+		this.changeCount = count;
+	}
 	
 	public String getFilename(){
 		return filename;
@@ -82,7 +89,12 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	public boolean gethasFixed(){
 		return hasFixed;
 	}
-	
+	public int getFixCount(){
+		return fixCount;
+	}
+	public int getChangeCount(){
+		return changeCount;
+	}
 	
 	@Override
 	public String toString(){

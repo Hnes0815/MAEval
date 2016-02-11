@@ -175,4 +175,24 @@ public class Preprocessing {
 	      
 	    return curBugSet;
 	}
+	
+	/**
+	 * Lädt alle Dateien aus einer TreeMap<ChangedFile, String> zwischen zwei Daten in ein Set
+	 * 
+	 * @param bugMap TreeMap mit allen Dateien im ChangedFile-Objektformat
+	 * @param startDate 
+	 * @param endDate
+	 * @return alle Bugfixes zwischen StartDate und EndDate
+	 */
+	public static HashMap<ChangedFile, String> getCurMap(TreeMap<ChangedFile, String> bugMap, Date startDate, Date endDate){
+		HashMap<ChangedFile, String> curBugMap = new HashMap<ChangedFile, String>();
+	      for(ChangedFile keySec : bugMap.keySet())
+		    {
+			  if(startDate.after(keySec.getDate())) continue;
+			  if(endDate.before(keySec.getDate())) break;
+		      		  
+			  curBugMap.put(keySec, keySec.getFile());		  
+		    }      
+	    return curBugMap;
+	}
 }

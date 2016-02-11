@@ -29,6 +29,7 @@ public class Program {
 	// TODO: argumente einsetzen
 	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/busybox/revisionsFull.csv";
 	private static String smellDir = "/home/hnes/Masterarbeit/Results/busybox/ABRes";
+	private static String tempPath = "/home/hnes/Masterarbeit/Temp/";
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
 	private static String project = "busybox";
 	private static int smellThreshold = 0;
@@ -65,11 +66,16 @@ public class Program {
 		TreeMap<ChangedFile, String> changedMapSingle = csvReader.getChangedFilesSingle();
 		
 		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		System.out.println("BUGMAP AUSGABE");
-		for(ChangedFile chFile : bugMap.keySet()){
-			System.out.println(chFile.getHash() + " - " + chFile.getDate() + " - " + chFile.getFile());
-		}
-		System.out.println("BUGMAP AUSGABE ENDE");
+//		System.out.println("BUGMAP AUSGABE");
+//		for(ChangedFile chFile : bugMap.keySet()){
+//			System.out.println(chFile.getHash() + " - " + chFile.getDate() + " - " + chFile.getFile());
+//		}
+//		System.out.println("BUGMAP AUSGABE ENDE");
+//		System.out.println("BUGMAPSINGLE AUSGABE");
+//		for(ChangedFile chFile : bugMapSingle.keySet()){
+//			System.out.println(chFile.getHash() + " - " + chFile.getDate() + " - " + chFile.getFile());
+//		}
+//		System.out.println("BUGMAPSINGLE AUSGABE ENDE");
 		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		File projectInfo = new File(resultsDir + project + "/projectInfo.csv");
@@ -88,26 +94,14 @@ public class Program {
 			HashMap<String, Integer> curBugSet = Preprocessing.getCurFiles(bugMap, startDate, curDate);
 			HashMap<String, Integer> curChangedSet = Preprocessing.getCurFiles(changedMap, startDate, curDate);
 			
-			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			System.out.println("CURBUGSET AUSGABE");
-			for(String strFile : curBugSet.keySet()){
-				System.out.println(strFile + " - " + curBugSet.get(strFile));
-			}
-			System.out.println("CURBUGSET AUSGABE ENDE");
-			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			// Vorbereitung für Proportion Test
+			HashMap<ChangedFile, String> curBugMap = Preprocessing.getCurMap(bugMap, startDate, curDate);
 			
-			// Vorbereitung für einzelne Commits
+						
+			// TODO: Vorbereitung für einzelne Commits (nur für die einzelnen Ratios pro Commit nötig... wahrscheinlich wieder zu entfernen)
 			HashMap<String, Integer> curBugSetSingle = Preprocessing.getCurFiles(bugMapSingle, startDate, curDate);
 			HashMap<String, Integer> curChangedSetSingle = Preprocessing.getCurFiles(changedMapSingle, startDate, curDate);
-			
-			
-			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			System.out.println("CURBUGSET SINGLE AUSGABE");
-			for(String strFile : curBugSetSingle.keySet()){
-				System.out.println(strFile + " - " + curBugSetSingle.get(strFile));
-			}
-			System.out.println("CURBUGSET SINGLE AUSGABE ENDE");
-			// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			////////////////////////////////////////////////
 			
 			HashSet<String> smellABSet = CSVHelper.getSmells(startDate, "AB");
 			HashSet<String> smellAFSet = CSVHelper.getSmells(startDate, "AF");
@@ -118,6 +112,15 @@ public class Program {
 			HashSet<String> fileSet = CSVHelper.getVersionFiles(startDate);
 			for(String s : fileSet){
 				MergedFileInfo fileInfo = new MergedFileInfo(s, startDate);
+				
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				String dateStr = formatter.format(startDate);
+				
+				String filePath = tempPath + project + "/" + dateStr + "/_cppstats/" + s;
+				System.out.println("FILE DEBUG: " + filePath);
+				File tempFile = new File(filePath);
+				fileInfo.setFileSize(tempFile.length());
+				
 				if(curBugSet.containsKey(s)){
 					fileInfo.sethasFixed();
 					fileInfo.setFixCount(curBugSet.get(s));
@@ -146,17 +149,12 @@ public class Program {
 				outputList.add(fileInfo);
 			}
 			
-						// Output
-						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-						String dateStr = formatter.format(startDate);
+			// Output
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String dateStr = formatter.format(startDate);
 			
-			// DEBUG NEU
-			//for(String s : curBugSetSingle){
-			//	System.out.println(s);
-			//}
-			
-		
-						
+							
+			// TODO:  (nur für die einzelnen Ratios pro Commit nötig... wahrscheinlich wieder zu entfernen)
 			String path = Program.getResultsDir() + Program.getProject() + "/CorrelatedRatio/";
 			File mkDir = new File(path);
 			mkDir.mkdirs();
@@ -165,6 +163,12 @@ public class Program {
 			int smellyFixAmount = 0;
 			int nonSmellyFixAmount = 0;
 			
+			/* --------------------------------------------------------------------- */
+			int curSnapshotSize = curBugMap.size();
+			// TODO: Zufall
+			/* --------------------------------------------------------------------- */
+			
+			/* ---------------------------------------------------------------------
 			// Commits von 0 bis 99 durchgehen
 			for(int i = 0; i<100; i++){
 				int smellyFix = 0;
@@ -198,11 +202,8 @@ public class Program {
 						}
 					}
 				}
-				
-				//System.out.println("Zeile : " + i);
-				
+								
 				try {
-				//	System.out.println("Test");
 					buffW = new BufferedWriter(new FileWriter( csvOut, true ));
 					buffW.write(smellyFix +","+ nonSmellyFix);
 					buffW.newLine();
@@ -212,7 +213,7 @@ public class Program {
 					e.printStackTrace();
 				}
 			}
-			
+			---------------------------------------------------------------- */
 			try {
 				buffW = new BufferedWriter(new FileWriter( csvOut, true ));
 				buffW.write(smellyFixAmount +","+ nonSmellyFixAmount);
@@ -223,7 +224,7 @@ public class Program {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+			// TODO: ENDE von (nur für die einzelnen Ratios pro Commit nötig... wahrscheinlich wieder zu entfernen)
 			
 			PreprocessOutput.writeCSV(outputList, dateStr);
 			

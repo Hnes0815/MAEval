@@ -16,6 +16,7 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	private int smellCount;
 	private int fixCount;
 	private int changeCount;
+	private long fileSize;
 	
 	public MergedFileInfo(String filename, Date verDate){
 		this.filename = filename;
@@ -28,6 +29,9 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 		this.version = "";
 		this.versDate = verDate;
 		this.smellCount = 0;
+		this.fixCount = 0;
+		this.changeCount = 0;
+		this.fileSize = 0;
 	}
 	
 	public void setSmellAB(){
@@ -60,6 +64,9 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	}
 	public void setChangeCount(Integer count){
 		this.changeCount = count;
+	}
+	public void setFileSize(long size){
+		this.fileSize = size;
 	}
 	
 	public String getFilename(){
@@ -94,6 +101,9 @@ public class MergedFileInfo implements Comparable<MergedFileInfo>{
 	}
 	public int getChangeCount(){
 		return changeCount;
+	}
+	public long getFileSize(){
+		return fileSize;
 	}
 	
 	@Override

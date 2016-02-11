@@ -43,7 +43,11 @@ public class ChangedFile implements Comparable<ChangedFile> {
 		else if(obj.getDate().before(this.getDate()))
 			return 1;
 		else{
-			return obj.getFile().compareTo(this.getFile());
+			if(obj.getHash().compareTo(this.getHash()) != 0){
+				return obj.getHash().compareTo(this.getHash());
+			}else{
+				return obj.getFile().compareTo(this.getFile());
+			}
 		}
 			
 	}

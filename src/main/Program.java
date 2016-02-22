@@ -13,9 +13,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.TreeMap;
 
 import data.ChangedFile;
+import data.CommitFile;
 import data.MergedFileInfo;
 import input.CSVHelper;
 import input.FileFinder;
@@ -27,11 +29,11 @@ import processing.Preprocessing;
 public class Program {
 
 	// TODO: argumente einsetzen
-	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/busybox/revisionsFull.csv";
-	private static String smellDir = "/home/hnes/Masterarbeit/Results/busybox/ABRes";
+	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/libxml2/revisionsFull.csv";
+	private static String smellDir = "/home/hnes/Masterarbeit/Results/libxml2/";
 	private static String tempPath = "/home/hnes/Masterarbeit/Temp/";
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
-	private static String project = "busybox";
+	private static String project = "libxml2";
 	private static int smellThreshold = 0;
 	private static int lofcThresh = 1112;
 	private static int nofcThresh = 56;
@@ -164,8 +166,36 @@ public class Program {
 			int nonSmellyFixAmount = 0;
 			
 			/* --------------------------------------------------------------------- */
-			int curSnapshotSize = curBugMap.size();
-			// TODO: Zufall
+			// Aktuelle Commitfile Map in Liste umwandeln
+			ArrayList<CommitFile> listOfBugcommits = new ArrayList<CommitFile>();
+			for(ChangedFile chFile : curBugMap.keySet()){
+				String fileName = chFile.getFile();
+				boolean smelly;
+				if(curVersionSmellyFiles.contains(fileName)){
+					smelly = true;
+				}else{
+					smelly = false;
+				}
+				CommitFile comFile = new CommitFile(fileName, smelly);
+				listOfBugcommits.add(comFile);
+			}
+			int curSnapshotSizeDebug = curBugMap.size();
+			int curSnapshotSize = listOfBugcommits.size();
+			System.out.println("DEBUG SNAPSHOT SIZE: " + curSnapshotSizeDebug + " - " + curSnapshotSize);
+			
+			int i = 0;
+			while(i <= 40){
+				int randomNum = randInt(0, curSnapshotSize-1);
+				System.out.println(listOfBugcommits.get(randomNum).getFile());
+				if(fileSet.contains(listOfBugcommits.get(randomNum).getFile())){
+					if(listOfBugcommits.get(randomNum).getSmelly()){
+						smellyFixAmount++;
+					}else{
+						nonSmellyFixAmount++;
+					}
+					i++;
+				}	
+			}
 			/* --------------------------------------------------------------------- */
 			
 			/* ---------------------------------------------------------------------
@@ -216,7 +246,7 @@ public class Program {
 			---------------------------------------------------------------- */
 			try {
 				buffW = new BufferedWriter(new FileWriter( csvOut, true ));
-				buffW.write(smellyFixAmount +","+ nonSmellyFixAmount);
+				buffW.write(smellyFixAmount +","+ nonSmellyFixAmount +","+ curSnapshotSize);
 				buffW.newLine();
 				buffW.flush();
 				buffW.close();
@@ -241,7 +271,12 @@ public class Program {
 		BufferedWriter buff = null;
 		try {
 			buff = new BufferedWriter(new FileWriter( csvOut, true ));
-			buff.write("Version Date, SF, SNF, NSF, NSNF, SC, SNC, NSC, NSNC, ORF, ORC, sABC, sAFC, sLFC, smellAmount, nSmellAmount");
+			buff.write("Version Date, sABC, sAFC, sLFC,  "
+					+ "SF, SNF, NSF, NSNF, smellAmount, nSmellAmount, sFixCount, nsFixCount, schnitt smSize, schnitt nsSize, "
+					+ "AB_SF,AB_SNF,AB_NSF,AB_NSNF,AB_smellAmount, AB_nSmellAmount, AB_sFixCount, AB_nsFixCount, AB_schnitt smSize, AB_schnitt nsSize, "
+					+ "AF_SF,AF_SNF,AF_NSF,AF_NSNF, AF_smellAmount, AF_nSmellAmount, AF_sFixCount, AF_nsFixCount, AF_schnitt smSize, AF_schnitt nsSize, "
+					+ "LF_SF,LF_SNF,LF_NSF,LF_NSNF, LF_smellAmount, LF_nSmellAmount, LF_sFixCount, LF_nsFixCount, LF_schnitt smSize, LF_schnitt nsSize,"
+					+ "ABAF_SF,ABAF_SNF,ABAF_NSF,ABAF_NSNF,ABAF_smellAmount, ABAF_nSmellAmount, ABAF_sFixCount, ABAF_nsFixCount, ABAF_schnitt smSize, ABAF_schnitt nsSize");
 			buff.newLine();
 			buff.close();
 		} catch (IOException e) {
@@ -260,8 +295,16 @@ public class Program {
 	  	}
 	}
 	
-	
-	
+	/** 
+	 * Random Int
+	 */
+	public static int randInt(int min, int max){
+		Random rand = new Random();
+		
+		int randomNum = rand.nextInt((max - min) + 1) + min;
+		
+		return randomNum;
+	}
 	
 	/**
 	 * Getter for Smell Directory

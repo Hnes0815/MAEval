@@ -32,7 +32,7 @@ public class SmellCSV {
 	public static void writeCurSmells(HashSet<String> smellSet, Date curDate){
 		// In CSV Datei schreiben
 	  String smellMode = Program.getSmellMode();	
-  	  File csvOut = new File(Program.getSmellDir() + "/../" + smellMode + "smellOverview.csv");
+  	  File csvOut = new File(Program.getSmellDir() + smellMode + "smellOverview.csv");
     
   	  for(String smell : smellSet){
   		BufferedWriter buff;

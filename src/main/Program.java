@@ -29,12 +29,13 @@ import processing.Preprocessing;
 public class Program {
 
 	// TODO: argumente einsetzen
-	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/libxml2/revisionsFull.csv";
-	private static String smellDir = "/home/hnes/Masterarbeit/Results/libxml2/";
+	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/busybox/revisionsFull.csv";
+	private static String smellDir = "/home/hnes/Masterarbeit/Results/busybox/";
 	private static String tempPath = "/home/hnes/Masterarbeit/Temp/";
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
-	private static String project = "libxml2";
+	private static String project = "busybox";
 	private static int smellThreshold = 0;
+	private static double percentile = 0.3;	// prozentualer Anteil der notenbesten Smells die genommen werden
 	private static int lofcThresh = 1112;
 	private static int nofcThresh = 56;
 	private static String smellModeStr = "";
@@ -183,19 +184,26 @@ public class Program {
 			int curSnapshotSize = listOfBugcommits.size();
 			System.out.println("DEBUG SNAPSHOT SIZE: " + curSnapshotSizeDebug + " - " + curSnapshotSize);
 			
-			int i = 0;
-			while(i <= 40){
-				int randomNum = randInt(0, curSnapshotSize-1);
-				System.out.println(listOfBugcommits.get(randomNum).getFile());
-				if(fileSet.contains(listOfBugcommits.get(randomNum).getFile())){
-					if(listOfBugcommits.get(randomNum).getSmelly()){
-						smellyFixAmount++;
-					}else{
-						nonSmellyFixAmount++;
-					}
-					i++;
-				}	
+			if(curSnapshotSize <= 1){
+				smellyFixAmount = 0;
+				nonSmellyFixAmount = 0;	
+			}else{
+				int i = 0;
+				while(i <= 40){
+					int randomNum = randInt(0, curSnapshotSize-1);
+					System.out.println(listOfBugcommits.get(randomNum).getFile());
+					if(fileSet.contains(listOfBugcommits.get(randomNum).getFile())){
+						if(listOfBugcommits.get(randomNum).getSmelly()){
+							smellyFixAmount++;
+						}else{
+							nonSmellyFixAmount++;
+						}
+						i++;
+					}	
+				}
 			}
+			
+			
 			/* --------------------------------------------------------------------- */
 			
 			/* ---------------------------------------------------------------------
@@ -256,6 +264,7 @@ public class Program {
 			}
 			// TODO: ENDE von (nur für die einzelnen Ratios pro Commit nötig... wahrscheinlich wieder zu entfernen)
 			
+			
 			PreprocessOutput.writeCSV(outputList, dateStr);
 			
 			
@@ -300,8 +309,9 @@ public class Program {
 	 */
 	public static int randInt(int min, int max){
 		Random rand = new Random();
+		int randomNum = 0;
 		
-		int randomNum = rand.nextInt((max - min) + 1) + min;
+		randomNum = rand.nextInt((max - min) + 1) + min;
 		
 		return randomNum;
 	}
@@ -344,6 +354,10 @@ public class Program {
 	 */
 	public static int getThreshold(){
 		return smellThreshold;
+	}
+	
+	public static double getPercentile(){
+		return percentile;
 	}
 	
 	public static int getlofcThresh(){

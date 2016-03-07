@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -31,7 +32,7 @@ public class CSVHelper {
 	private TreeMap<ChangedFile, String> changedFilesSingle = new TreeMap<ChangedFile, String>();
 	// Liste für jeden x-ten Bugfix Commit
 	private TreeMap<ChangedFile, String> bugFilesSingle = new TreeMap<ChangedFile, String>();
-	
+	private double percentile = Program.getPercentile();
 	
 	/**
 	 * Instantiates a new CSVReader
@@ -51,9 +52,10 @@ public class CSVHelper {
 	public HashSet<String> getSmellsFromFile(String curFile, int smellThreshold){
 		String csvFile = curFile;
 		String smellModeStr = Program.getSmellMode();
-		
+		double totalSmells = 0;
 		HashSet<String> smellSet = new HashSet<String>();
-		
+		ArrayList<Double> scoreList = new ArrayList<Double>();
+		TreeMap<String, Double> tempMap = new TreeMap<String, Double>();
 		try {
 			CSVReader reader = new CSVReader(new FileReader(csvFile));
 			String[] nextLine;
@@ -73,14 +75,46 @@ public class CSVHelper {
 				int lastdotIdx = fileName.lastIndexOf(".");
 	    		String curFileStr = fileName.substring(fileIdx, lastdotIdx);
 								
-				if(smellScore >= smellThreshold)
-					smellSet.add(curFileStr);
+				if(smellScore >= smellThreshold){
+					
+					//smellSet.add(curFileStr);
+					totalSmells++;
+					if(!tempMap.containsKey(curFileStr)){
+						tempMap.put(curFileStr, smellScore);
+						scoreList.add(smellScore);
+					}
+				}
+					
 			}
 		} catch (IOException e1) {
 			System.out.println("Fehler beim lesen/schreiben der Datei!");
 			e1.printStackTrace();
 		}
 		
+		double percSum = percentile * (double) tempMap.size();
+		double totalSum = 0;
+		double tempThresh = 0;
+		
+	    Collections.sort(scoreList);
+	    Collections.reverse(scoreList);
+		
+	    for(double temp:scoreList){
+	    	totalSum++;
+	    	if(totalSum >= percSum){
+	    		tempThresh = temp;
+	    		break;
+	    	}
+	    }
+	    
+		for(String file : tempMap.keySet()){
+			if(smellModeStr.equals("LF")){
+				smellSet.add(file);
+			}
+			if(tempMap.get(file) >= tempThresh){
+				
+				smellSet.add(file);
+			}
+		}
 		return smellSet;
 	}
 	

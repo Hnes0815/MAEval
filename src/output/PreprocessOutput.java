@@ -16,6 +16,10 @@ public class PreprocessOutput {
 		File mkDir = new File(path);
 		mkDir.mkdirs();
 		File csvOut = new File(path + dateStr +".csv");
+		
+		if(csvOut.exists()){
+			return;
+		}
 		BufferedWriter buff = null;
 		try {
 			buff = new BufferedWriter(new FileWriter( csvOut, true ));

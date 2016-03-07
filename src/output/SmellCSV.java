@@ -65,6 +65,19 @@ public class SmellCSV {
 		TreeMap<String, Double> featureMap = CSVHelper.getFeatureMap(smellCSV.getAbsolutePath(), Program.getThreshold());
 		smellCSV.delete();
 		
+		if(featureMap.isEmpty()){
+			BufferedWriter buff;
+			try {
+				buff = new BufferedWriter(new FileWriter( csvOut, true ));
+				buff.write(  "," );
+			    buff.newLine();
+			    buff.close();
+			} catch (IOException e1) {
+				System.out.println("Fehler beim lesen/schreiben der Datei!");
+				e1.printStackTrace();
+			}
+		}
+		
 		// die eingelesenen Features mit der XML abgleichen und Filenamen pro Feature auslesen
 		for(String s : featureMap.keySet()){
 			HashSet<String> fileSetXML = new HashSet<String>();

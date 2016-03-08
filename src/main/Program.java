@@ -2,6 +2,7 @@ package main;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeMap;
 
+import com.opencsv.CSVReader;
+
 import data.ChangedFile;
 import data.CommitFile;
 import data.MergedFileInfo;
@@ -24,21 +27,24 @@ import input.FileFinder;
 import output.PreprocessOutput;
 import output.SmellCSV;
 import processing.Evaluation;
+import processing.EvaluationSize;
 import processing.Preprocessing;
 
 public class Program {
 
 	// TODO: argumente einsetzen
-	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/busybox/revisionsFull.csv";
-	private static String smellDir = "/home/hnes/Masterarbeit/Results/busybox/";
+	private static String csvPath = "/home/hnes/Masterarbeit/Repositories/httpd/revisionsFull.csv";
+	private static String smellDir = "/home/hnes/Masterarbeit/Results/httpd/";
 	private static String tempPath = "/home/hnes/Masterarbeit/Temp/";
 	private static String resultsDir = "/home/hnes/Masterarbeit/Results/";
-	private static String project = "busybox";
+	private static String project = "httpd";
 	private static int smellThreshold = 0;
-	private static double percentile = 0.3;	// prozentualer Anteil der notenbesten Smells die genommen werden
+	private static double percentile = 0.7;	// prozentualer Anteil der notenbesten Smells die genommen werden
+	private static double sizePercentile = 0.25;
 	private static int lofcThresh = 1112;
 	private static int nofcThresh = 56;
 	private static String smellModeStr = "";
+	
 	
 	/**
 	 * The main method.
@@ -293,6 +299,25 @@ public class Program {
 			e.printStackTrace();
 		}
 		
+		// Evaluierung mit Size Komponente
+		String pathSize = Program.getResultsDir() + Program.getProject() + "/Correlated/../corOverviewSize.csv";
+		File csvOutSize = new File(pathSize);
+		BufferedWriter buffSize = null;
+		try {
+			buffSize = new BufferedWriter(new FileWriter( csvOutSize, true ));
+			buffSize.write("Version Date, sABC, sAFC, sLFC,  "
+					+ "SF, SNF, NSF, NSNF, smellAmount, nSmellAmount, sFixCount, nsFixCount, schnitt smSize, schnitt nsSize, "
+					+ "AB_SF,AB_SNF,AB_NSF,AB_NSNF,AB_smellAmount, AB_nSmellAmount, AB_sFixCount, AB_nsFixCount, AB_schnitt smSize, AB_schnitt nsSize, "
+					+ "AF_SF,AF_SNF,AF_NSF,AF_NSNF, AF_smellAmount, AF_nSmellAmount, AF_sFixCount, AF_nsFixCount, AF_schnitt smSize, AF_schnitt nsSize, "
+					+ "LF_SF,LF_SNF,LF_NSF,LF_NSNF, LF_smellAmount, LF_nSmellAmount, LF_sFixCount, LF_nsFixCount, LF_schnitt smSize, LF_schnitt nsSize,"
+					+ "ABAF_SF,ABAF_SNF,ABAF_NSF,ABAF_NSNF,ABAF_smellAmount, ABAF_nSmellAmount, ABAF_sFixCount, ABAF_nsFixCount, ABAF_schnitt smSize, ABAF_schnitt nsSize");
+			buffSize.newLine();
+			buffSize.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		String pathFind = Program.getResultsDir() + Program.getProject() + "/Correlated/";
 		System.out.println( "Suche im Pfad: " + pathFind );
 	  	List<File> filesFind = FileFinder.find( pathFind, "(.*\\.csv$)" );
@@ -301,6 +326,40 @@ public class Program {
 	  	
 	  	for(File f : filesFind){
 	  		Evaluation.evalFile(f);
+	  		
+	  		//TODO: Size Threshold berechnen und dann evalFile mit diesem aufrufen...
+	  		ArrayList<Double> sizeList = new ArrayList<Double>();
+	  		try {
+				CSVReader reader = new CSVReader(new FileReader(f));
+				String[] nextLine;
+				reader.readNext(); //erste Zeile überspringen
+				while ((nextLine = reader.readNext()) != null) {
+					
+					double fileSize = Double.parseDouble(nextLine[10]);								
+					sizeList.add(fileSize);
+																	
+				}
+			} catch (IOException e1) {
+				System.out.println("Fehler beim lesen/schreiben der Datei!");
+				e1.printStackTrace();
+			}
+	  		
+	  		double percSum = sizePercentile * (double) sizeList.size();
+			double totalSum = 0;
+			double tempThresh = 0;
+			
+		    Collections.sort(sizeList);
+		    Collections.reverse(sizeList);
+			
+		    for(double temp:sizeList){
+		    	totalSum++;
+		    	if(totalSum >= percSum){
+		    		tempThresh = temp;
+		    		break;
+		    	}
+		    }
+		    
+		    EvaluationSize.evalFileSize(f, tempThresh);
 	  	}
 	}
 	
